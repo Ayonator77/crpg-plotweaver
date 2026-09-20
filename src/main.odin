@@ -1,6 +1,6 @@
 package main
 import "platform"
-
+import "renderer"
 import "core:fmt"
 
 
@@ -17,6 +17,13 @@ main :: proc() {
         return
     }
 
+    graphics: renderer.State
+    defer renderer.shutdown(&graphics)
+
+    if !renderer.init(&graphics){
+        return
+    }
+
     fmt.printf(
         "%s: %d x %d\n",
         config.title,
@@ -26,7 +33,7 @@ main :: proc() {
     app := App_State{
         running = true,
         frame_index = 0,
-        background = [3]f32{0.0, 0.1, 0.5},
+        background = [3]f32{0.1, 0.3, 0.5},
     }
 
     for app.running {
@@ -39,6 +46,25 @@ main :: proc() {
             break
         }
         advance_frame(&app)
+        width, height, size_ok := platform.drawable_size(&host)
+        if !size_ok{
+            request_exit(&app)
+            break
+        }
+
+        if width <=0 || height <= 0 {
+            platform.pause(16)
+            continue
+        }
+
+        renderer.clear(width, height, app.background)
+        renderer.draw_triangle(&graphics)
+
+        if !platform.present(&host){
+            request_exit(&app)
+            break
+        }
+
         platform.pause(8)
     }
 
