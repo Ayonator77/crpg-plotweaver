@@ -8,9 +8,12 @@ State :: struct {
     triangle_vao: u32,
     triangle_vbo: u32,
     triangle_program: u32,
+    triangle_color_location: i32,
 }
 
 init :: proc(state: ^State) -> bool{
+    state.triangle_color_location = -1
+
     vertices := [9]f32 {
         -0.5, -0.5, 0.0,
         0.5, -0.5, 0.0,
@@ -52,6 +55,12 @@ init :: proc(state: ^State) -> bool{
     }
 
     state.triangle_program = program
+
+    state.triangle_color_location = gl.GetUniformLocation(state.triangle_program, "u_color")
+    if state.triangle_color_location == -1 {
+        fmt.eprintf("Triangle shader is missing the active uniform u_color")
+        return false
+    }
     return true
 }
 
@@ -71,12 +80,17 @@ shutdown :: proc(state: ^State){
         gl.DeleteBuffers(1, &state.triangle_vbo)
         state.triangle_vbo = 0
     }
+
+    state.triangle_color_location = -1
 }
 
-draw_triangle :: proc(state: ^State){
+draw_triangle :: proc(state: ^State, color: [3]f32){
     gl.UseProgram(state.triangle_program)
+
+    gl.Uniform3f(state.triangle_color_location, color[0], color[1], color[2])
+
     gl.BindVertexArray(state.triangle_vao)
-    
+
     gl.DrawArrays(gl.TRIANGLES, 0, 3)
 
     gl.BindVertexArray(0)

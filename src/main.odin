@@ -1,6 +1,10 @@
 package main
-import "platform"
-import "renderer"
+
+// Only the import paths changed with the new folder layout:
+// `-collection:pw=src` (see run.bat) turns `src/` into the collection `pw`,
+// so any file anywhere in the tree can say `import "pw:engine/platform"`.
+import "pw:engine/platform"
+import "pw:engine/renderer"
 import "core:fmt"
 
 
@@ -34,6 +38,7 @@ main :: proc() {
         running = true,
         frame_index = 0,
         background = [3]f32{0.1, 0.3, 0.5},
+        triangle_color = [3]f32{1.0, 0.45, 0.1}
     }
 
     for app.running {
@@ -45,6 +50,15 @@ main :: proc() {
         if(!app.running){
             break
         }
+
+        if events.r_pressed {
+            app.triangle_color = [3]f32{1.0, 0.0, 0.0}
+        } else if events.g_pressed {
+            app.triangle_color = [3]f32{0.0, 1.0, 0.0}
+        } else if events.b_pressed {
+            app.triangle_color = [3]f32{0.0, 0.0, 1.0}
+        }
+
         advance_frame(&app)
         width, height, size_ok := platform.drawable_size(&host)
         if !size_ok{
@@ -58,7 +72,7 @@ main :: proc() {
         }
 
         renderer.clear(width, height, app.background)
-        renderer.draw_triangle(&graphics)
+        renderer.draw_triangle(&graphics, app.triangle_color)
 
         if !platform.present(&host){
             request_exit(&app)

@@ -14,6 +14,9 @@ State :: struct {
 Events :: struct {
     quit_requested: bool,
     escape_pressed: bool,
+    r_pressed: bool,
+    g_pressed: bool,
+    b_pressed: bool,
 }
 
 init:: proc(state: ^State, title: string, width, height: i32) -> bool {
@@ -105,10 +108,23 @@ poll_events:: proc() -> Events{
         #partial switch event.type {
             case .QUIT:
                 results.quit_requested = true
-            
+
             case .KEY_DOWN:
                 if event.key.key == sdl.K_ESCAPE {
                     results.escape_pressed = true
+                }
+
+                if !event.key.repeat {
+                    if event.key.key == sdl.K_R {
+                    results.r_pressed = true
+                    }
+                    if event.key.key == sdl.K_G {
+                        results.g_pressed = true
+                    }
+
+                    if event.key.key == sdl.K_B {
+                        results.b_pressed = true
+                    }
                 }
         }
     }
