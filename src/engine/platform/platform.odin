@@ -132,6 +132,40 @@ poll_events:: proc() -> Events{
     return results
 }
 
+@(private)
+translate_scancode :: proc(code: sdl.Scancode) -> Key{
+    #partial switch code {
+        case .A ..= .Z:
+            return Key(int(Key.A) + int(code) - int(sdl.Scancode.A))
+        //TODO: digits (watchout for sdl's _1.._9 order: a range wont give num_0 correctly)
+        case ._1 ..= ._9:
+            return Key(int(Key.Num_1) + int(code) - int(sdl.Scancode._1))
+        //TODO: .ESCAPE -> .Escape, .RETURN-> .Enter, .Space, .TAB ...
+    }
+
+    return .Unknown
+}
+
+poll_events_ :: proc(input: ^Input){
+    input.keys_pressed = {}
+    input.keys_released = {}
+    input.mouse_pressed = {}
+    input.mouse_released = {}
+    input.mouse_delta = {}
+    input.wheel = 0
+
+    event: sdl.Event
+    for sdl.PollEvent(&event) {
+        #partial switch event.type {
+            case .QUIT:
+                input.quit_requested = true
+            
+            case .KEY_DOWN:
+                key := translate_scancode(event.key.scancode)
+        }
+    }
+}
+
 drawable_size :: proc(state: ^State) -> (i32, i32, bool){
     width, height: i32
     ok:= sdl.GetWindowSizeInPixels(state.window, &width, &height)
