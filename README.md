@@ -2,7 +2,11 @@
 
 A turn-based, party-driven 3D CRPG built on a custom engine written from scratch in [Odin](https://odin-lang.org/).
 
-Plotweaver aims for the scope of games like *Divinity: Original Sin 2* and *Warhammer 40,000: Rogue Trader*: an isometric camera, tactical turn-based combat, environmental interactions, and branching conversations. Its rules are adapted from the Plotweaver tabletop RPG system.
+This is an unofficial fan project that brings the **Plotweaver** tabletop RPG to the screen. It uses Plotweaver's ruleset as the foundation for its mechanics: d20 skill checks against a DC, the plot die and the complications or opportunities it creates, a fast or slow turn structure, and conversations played out as contests of focus.
+
+It aims for the scope of games like *Divinity: Original Sin 2* and *Warhammer 40,000: Rogue Trader*: an isometric camera, tactical turn-based combat, environmental interactions, and branching conversations.
+
+> **Disclaimer:** This video game is a fan-made project. It is not affiliated with, endorsed by, or sponsored by the creators of the Plotweaver tabletop RPG. All rights to the original game belong to their respective owners.
 
 > **Status:** early development. The engine foundation (windowing, OpenGL context, shader loading, input) is in place. There's nothing to play yet.
 
