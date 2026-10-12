@@ -1,0 +1,7 @@
+# markdownlint config (used by LazyVim's lang.markdown extra via nvim-lint)
+config:
+  MD013: false  # line-length: prose lines are long by design
+  MD028: false  # no-blanks-blockquote: README uses separate adjacent blockquotes
+  MD036: false  # no-emphasis-as-heading: bold milestone labels are intentional
+  MD040: false  # fenced-code-language: unlabeled fences are ASCII diagrams
+  MD060: false  # table-column-style: don't require padded table pipes

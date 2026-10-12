@@ -11,13 +11,7 @@ State :: struct {
     gl_context: sdl.GLContext,
 }
 
-Events :: struct {
-    quit_requested: bool,
-    escape_pressed: bool,
-    r_pressed: bool,
-    g_pressed: bool,
-    b_pressed: bool,
-}
+
 
 init:: proc(state: ^State, title: string, width, height: i32) -> bool {
     // Initialize SDL and create a window
@@ -100,53 +94,45 @@ shutdown:: proc(state: ^ State) {
     }
 }
 
-poll_events:: proc() -> Events{
-    // Translate sdl events into our own event summary
-    results : Events
-    event: sdl.Event
-    for sdl.PollEvent(&event) {
-        #partial switch event.type {
-            case .QUIT:
-                results.quit_requested = true
-
-            case .KEY_DOWN:
-                if event.key.key == sdl.K_ESCAPE {
-                    results.escape_pressed = true
-                }
-
-                if !event.key.repeat {
-                    if event.key.key == sdl.K_R {
-                    results.r_pressed = true
-                    }
-                    if event.key.key == sdl.K_G {
-                        results.g_pressed = true
-                    }
-
-                    if event.key.key == sdl.K_B {
-                        results.b_pressed = true
-                    }
-                }
-        }
-    }
-
-    return results
-}
-
 @(private)
 translate_scancode :: proc(code: sdl.Scancode) -> Key{
     #partial switch code {
         case .A ..= .Z:
             return Key(int(Key.A) + int(code) - int(sdl.Scancode.A))
-        //TODO: digits (watchout for sdl's _1.._9 order: a range wont give num_0 correctly)
+
+        // SDL orders digits _1.._9, _0, so 0 gets its own case
         case ._1 ..= ._9:
             return Key(int(Key.Num_1) + int(code) - int(sdl.Scancode._1))
-        //TODO: .ESCAPE -> .Escape, .RETURN-> .Enter, .Space, .TAB ...
+        case ._0: return .Num_0
+
+        case .F1 ..= .F12:
+            return Key(int(Key.F1) + int(code) - int(sdl.Scancode.F1))
+
+        case .ESCAPE:    return .Escape
+        case .RETURN:    return .Enter
+        case .SPACE:     return .Space
+        case .TAB:       return .Tab
+        case .BACKSPACE: return .Backspace
+        case .DELETE:    return .Delete
+
+        case .LSHIFT:    return .Left_Shift
+        case .RSHIFT:    return .Right_Shift
+        case .LCTRL:     return .Left_Ctrl
+        case .RCTRL:     return .Right_Ctrl
+        case .LALT:      return .Left_Alt
+        case .RALT:      return .Right_Alt
+
+        // SDL orders arrows RIGHT, LEFT, DOWN, UP: a range would map them wrong
+        case .UP:        return .Up
+        case .DOWN:      return .Down
+        case .LEFT:      return .Left
+        case .RIGHT:     return .Right
     }
 
     return .Unknown
 }
 
-poll_events_ :: proc(input: ^Input){
+poll_events :: proc(input: ^Input){
     input.keys_pressed = {}
     input.keys_released = {}
     input.mouse_pressed = {}
@@ -162,6 +148,43 @@ poll_events_ :: proc(input: ^Input){
             
             case .KEY_DOWN:
                 key := translate_scancode(event.key.scancode)
+                if key == .Unknown || event.key.repeat do continue
+                input.keys_down += {key}
+                input.keys_pressed += {key}
+            
+            case .KEY_UP:
+              key := translate_scancode(event.key.scancode)
+              if key == .Unknown do continue
+              input.keys_down -= {key}
+              input.keys_released += {key}
+            
+            case .MOUSE_WHEEL:
+              scroll := event.wheel.y
+              if event.wheel.direction == .FLIPPED do scroll = -scroll
+              input.wheel += scroll
+
+            case .MOUSE_MOTION:
+              input.mouse_position = {event.motion.x, event.motion.y}
+              input.mouse_delta += {event.motion.xrel, event.motion.yrel}
+
+            case .MOUSE_BUTTON_DOWN, .MOUSE_BUTTON_UP:
+              sdl_button := event.button.button
+              if sdl_button < 1 || sdl_button > 5 do continue
+              button := Mouse_Button(sdl_button - 1)
+              if event.button.down {
+                input.mouse_down += {button}
+                input.mouse_pressed += {button}
+              }else {
+                input.mouse_down -= {button}
+                input.mouse_released += {button}
+    
+              }
+
+            case .WINDOW_FOCUS_LOST:
+              input.keys_released += input.keys_down
+              input.keys_down = {}
+              input.mouse_released += input.mouse_down
+              input.mouse_down = {}            
         }
     }
 }

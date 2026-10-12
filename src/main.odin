@@ -41,9 +41,11 @@ main :: proc() {
         triangle_color = [3]f32{1.0, 0.45, 0.1}
     }
 
+    input: platform.Input
+
     for app.running {
-        events := platform.poll_events()
-        if(events.quit_requested || events.escape_pressed){
+        platform.poll_events(&input)
+        if(input.quit_requested || .Escape in input.keys_pressed){
             request_exit(&app)
         }
 
@@ -51,11 +53,11 @@ main :: proc() {
             break
         }
 
-        if events.r_pressed {
+        if .R in input.keys_pressed {
             app.triangle_color = [3]f32{1.0, 0.0, 0.0}
-        } else if events.g_pressed {
+        } else if .G in input.keys_pressed {
             app.triangle_color = [3]f32{0.0, 1.0, 0.0}
-        } else if events.b_pressed {
+        } else if .B in input.keys_pressed {
             app.triangle_color = [3]f32{0.0, 0.0, 1.0}
         }
 
