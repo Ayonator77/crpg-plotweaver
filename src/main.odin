@@ -5,6 +5,7 @@ package main
 // so any file anywhere in the tree can say `import "pw:engine/platform"`.
 import "pw:engine/platform"
 import "pw:engine/renderer"
+import "pw:game"
 import "core:fmt"
 
 
@@ -27,6 +28,10 @@ main :: proc() {
     if !renderer.init(&graphics){
         return
     }
+    
+    game_state: game.State
+    defer game.shutdown(&game_state)
+    game.init(&game_state)
 
     fmt.printf(
         "%s: %d x %d\n",
@@ -37,15 +42,15 @@ main :: proc() {
     app := App_State{
         running = true,
         frame_index = 0,
-        background = [3]f32{0.1, 0.3, 0.5},
-        triangle_color = [3]f32{1.0, 0.45, 0.1}
     }
 
     input: platform.Input
 
     for app.running {
         platform.poll_events(&input)
-        if(input.quit_requested || .Escape in input.keys_pressed){
+        game.update(&game_state, input)
+
+        if(input.quit_requested || game_state.wants_quit){
             request_exit(&app)
         }
 
@@ -53,13 +58,7 @@ main :: proc() {
             break
         }
 
-        if .R in input.keys_pressed {
-            app.triangle_color = [3]f32{1.0, 0.0, 0.0}
-        } else if .G in input.keys_pressed {
-            app.triangle_color = [3]f32{0.0, 1.0, 0.0}
-        } else if .B in input.keys_pressed {
-            app.triangle_color = [3]f32{0.0, 0.0, 1.0}
-        }
+ 
 
         advance_frame(&app)
         width, height, size_ok := platform.drawable_size(&host)
@@ -73,8 +72,8 @@ main :: proc() {
             continue
         }
 
-        renderer.clear(width, height, app.background)
-        renderer.draw_triangle(&graphics, app.triangle_color)
+        renderer.clear(width, height, game_state.background)
+        renderer.draw_triangle(&graphics, game_state.triangle_color)
 
         if !platform.present(&host){
             request_exit(&app)
@@ -84,6 +83,6 @@ main :: proc() {
         platform.pause(8)
     }
 
-    fmt.printf("Application Stopped")
+    fmt.printf("Application Stopped\n")
 
 }

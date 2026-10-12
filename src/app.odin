@@ -8,9 +8,7 @@ App_config :: struct {
 
 App_State :: struct {
     running: bool,
-    frame_index: u64,
-    background: [3]f32,
-    triangle_color: [3]f32
+    frame_index: u64,   
 }
 
 request_exit :: proc(app: ^App_State){
