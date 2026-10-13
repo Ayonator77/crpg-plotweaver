@@ -1,5 +1,4 @@
 package main
-
 // Only the import paths changed with the new folder layout:
 // `-collection:pw=src` (see run.bat) turns `src/` into the collection `pw`,
 // so any file anywhere in the tree can say `import "pw:engine/platform"`.
@@ -7,9 +6,27 @@ import "pw:engine/platform"
 import "pw:engine/renderer"
 import "pw:game"
 import "core:fmt"
+import "core:log"
+
+@(require) import "core:mem"
 
 
 main :: proc() {
+    when ODIN_DEBUG {
+        track: mem.Tracking_Allocator
+        mem.tracking_allocator_init(&track, context.allocator)
+        context.allocator = mem.tracking_allocator(&track)
+        defer {
+            for _, entry in track.allocation_map {
+                fmt.eprintf("LEAK %v: %v bytes\n", entry.location, entry.size)
+            }
+            mem.tracking_allocator_destroy(&track)
+        }
+    }
+
+    context.logger = log.create_console_logger()
+    defer log.destroy_console_logger(context.logger)
+
     config := App_config{
         title = "Plotweaver RPG",
         window_width = 1920,
@@ -22,14 +39,13 @@ main :: proc() {
         return
     }
 
-   
     graphics: renderer.State
     defer renderer.shutdown(&graphics)
 
     if !renderer.init(&graphics){
         return
     }
-    
+
     game_state: game.State
     defer game.shutdown(&game_state)
     game.init(&game_state)
@@ -51,6 +67,7 @@ main :: proc() {
     platform.time_init(&clock)
 
     for app.running {
+        defer free_all(context.temp_allocator)
         platform.time_tick(&clock)
         platform.poll_events(&input)
 
@@ -63,8 +80,6 @@ main :: proc() {
         if(!app.running){
             break
         }
-
- 
 
         advance_frame(&app)
         width, height, size_ok := platform.drawable_size(&host)
@@ -85,9 +100,7 @@ main :: proc() {
             request_exit(&app)
             break
         }
-
     }
 
     fmt.printf("Application Stopped\n")
-
 }

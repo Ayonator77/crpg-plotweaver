@@ -1,6 +1,6 @@
 package platform
 
-import "core:fmt"
+import "core:log"
 import "core:strings"
 import sdl "vendor:sdl3"
 import gl "vendor:OpenGL"
@@ -16,18 +16,18 @@ State :: struct {
 init:: proc(state: ^State, title: string, width, height: i32) -> bool {
     // Initialize SDL and create a window
     if(!sdl.Init({.VIDEO})){
-        fmt.eprintf("SDL initialization failed: %s\n", sdl.GetError())
+        log.errorf("SDL initialization failed: %s", sdl.GetError())
         return false
     }
     state.sdl_init = true
 
     if !sdl.GL_SetAttribute(.CONTEXT_MAJOR_VERSION, 4) {
-        fmt.eprintf("Setting OpenGL major version failed: %s\n", sdl.GetError())
+        log.errorf("Setting OpenGL major version failed: %s", sdl.GetError())
         return false
     }
 
     if !sdl.GL_SetAttribute(.CONTEXT_MINOR_VERSION, 3) {
-        fmt.eprintf("Setting OpenGL minor version failed: %s\n", sdl.GetError())
+        log.errorf("Setting OpenGL minor version failed: %s", sdl.GetError())
         return false
     }
 
@@ -35,17 +35,24 @@ init:: proc(state: ^State, title: string, width, height: i32) -> bool {
         .CONTEXT_PROFILE_MASK,
         i32(sdl.GL_CONTEXT_PROFILE_CORE),
     ) {
-        fmt.eprintf("Setting OpenGL core profile failed: %s\n", sdl.GetError())
+        log.errorf("Setting OpenGL core profile failed: %s", sdl.GetError())
         return false
     }
 
     if !sdl.GL_SetAttribute(.DOUBLEBUFFER, 1) {
-        fmt.eprintf("Enabling double buffering failed: %s\n", sdl.GetError())
+        log.errorf("Enabling double buffering failed: %s", sdl.GetError())
         return false
     }
+
+    when ODIN_DEBUG {
+      if !sdl.GL_SetAttribute(.CONTEXT_FLAGS, i32(transmute(u32)sdl.GL_CONTEXT_DEBUG_FLAG)){
+        log.errorf("Requesting a debug GL context failed: %s", sdl.GetError())
+      }
+    }
+
     c_title, allocation_error := strings.clone_to_cstring(title)
     if(allocation_error != nil) {
-        fmt.eprintf("Window title allocation failed: %v\n", allocation_error)
+        log.errorf("Window title allocation failed: %v", allocation_error)
         return false
     }
     defer delete(c_title)
@@ -58,20 +65,20 @@ init:: proc(state: ^State, title: string, width, height: i32) -> bool {
     )
 
     if(state.window == nil){
-        fmt.eprintf("Window creation failed: %s\n", sdl.GetError())
+        log.errorf("Window creation failed: %s", sdl.GetError())
         return false
     }
 
     state.gl_context = sdl.GL_CreateContext(state.window)
 
     if state.gl_context == nil {
-        fmt.eprintf("OpenGL context creation failed: %s\n", sdl.GetError())
+        log.errorf("OpenGL context creation failed: %s", sdl.GetError())
         return false
     }
 
     gl.load_up_to(4, 3, sdl.gl_set_proc_address)
-    fmt.printf("OpenGL version: %s\n", gl.GetString(gl.VERSION))
-    fmt.printf("Graphics renderer: %s\n", gl.GetString(gl.RENDERER))
+    log.infof("OpenGL version: %s", gl.GetString(gl.VERSION))
+    log.infof("Graphics renderer: %s", gl.GetString(gl.RENDERER))
 
     return true
 }
@@ -192,7 +199,7 @@ poll_events :: proc(input: ^Input){
 
 set_vsync :: proc(on: bool) -> bool{
   if !sdl.GL_SetSwapInterval(on ? 1: 0) {
-    fmt.eprintf("Setting swap interval failed: %s\n", sdl.GetError())
+    log.errorf("Setting swap interval failed: %s", sdl.GetError())
     return false
   }
   return true
@@ -204,7 +211,7 @@ drawable_size :: proc(state: ^State) -> (i32, i32, bool){
     width, height: i32
     ok:= sdl.GetWindowSizeInPixels(state.window, &width, &height)
     if !ok {
-        fmt.eprintf("Drawable size query failed: %s\n", sdl.GetError())
+        log.errorf("Drawable size query failed: %s", sdl.GetError())
     }
 
     return width, height, ok
@@ -212,7 +219,7 @@ drawable_size :: proc(state: ^State) -> (i32, i32, bool){
 
 present :: proc(state: ^State) -> bool {
     if !sdl.GL_SwapWindow(state.window) {
-        fmt.eprintf("Frame presentation failed: %s\n", sdl.GetError())
+        log.errorf("Frame presentation failed: %s", sdl.GetError())
         return false
     }
     return true

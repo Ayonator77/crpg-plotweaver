@@ -55,12 +55,8 @@ compile_shader :: proc(kind: u32, source: []u8, source_name:string) -> (u32, boo
     return shader, true
 }
 
-compile_shader_file :: proc(kind: u32, path:string) -> (u32, bool){
-    allocator := context.allocator
-
-    source, read_error := os.read_entire_file(path, allocator)
-    defer delete(source, allocator)
-
+compile_shader_file :: proc(kind: u32, path:string) -> (u32, bool){  
+    source, read_error := os.read_entire_file(path, context.temp_allocator)
     if read_error != nil {
         fmt.eprintf("Could not read shader '%s': %v\n", path, read_error)
         return 0, false

@@ -2,18 +2,19 @@ package renderer
 
 import gl "vendor:OpenGL"
 import "core:fmt"
-
+import "base:runtime"
 
 State :: struct {
     triangle_vao: u32,
     triangle_vbo: u32,
     triangle_program: u32,
     triangle_color_location: i32,
+    debug_context: runtime.Context,
 }
 
 init :: proc(state: ^State) -> bool{
+    when ODIN_DEBUG do enable_debug_output(state)
     state.triangle_color_location = -1
-
     vertices := [9]f32 {
         -0.5, -0.5, 0.0,
         0.5, -0.5, 0.0,
