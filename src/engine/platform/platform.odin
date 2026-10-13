@@ -189,6 +189,17 @@ poll_events :: proc(input: ^Input){
     }
 }
 
+
+set_vsync :: proc(on: bool) -> bool{
+  if !sdl.GL_SetSwapInterval(on ? 1: 0) {
+    fmt.eprintf("Setting swap interval failed: %s\n", sdl.GetError())
+    return false
+  }
+  return true
+}
+
+
+
 drawable_size :: proc(state: ^State) -> (i32, i32, bool){
     width, height: i32
     ok:= sdl.GetWindowSizeInPixels(state.window, &width, &height)

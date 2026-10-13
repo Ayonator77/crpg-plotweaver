@@ -22,6 +22,7 @@ main :: proc() {
         return
     }
 
+   
     graphics: renderer.State
     defer renderer.shutdown(&graphics)
 
@@ -45,10 +46,15 @@ main :: proc() {
     }
 
     input: platform.Input
+    clock: platform.Frame_Time
+
+    platform.time_init(&clock)
 
     for app.running {
+        platform.time_tick(&clock)
         platform.poll_events(&input)
-        game.update(&game_state, input)
+
+        game.update(&game_state, input, clock.dt)
 
         if(input.quit_requested || game_state.wants_quit){
             request_exit(&app)
@@ -80,7 +86,6 @@ main :: proc() {
             break
         }
 
-        platform.pause(8)
     }
 
     fmt.printf("Application Stopped\n")
