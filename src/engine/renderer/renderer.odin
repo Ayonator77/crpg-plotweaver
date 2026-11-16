@@ -3,12 +3,14 @@ package renderer
 import gl "vendor:OpenGL"
 import "core:fmt"
 import "base:runtime"
+import "core:log"
 
 State :: struct {
     triangle_vao: u32,
     triangle_vbo: u32,
     triangle_program: u32,
     triangle_color_location: i32,
+    triangle_mvp_location: i32,
     debug_context: runtime.Context,
 }
 
@@ -59,8 +61,13 @@ init :: proc(state: ^State) -> bool{
 
     state.triangle_color_location = gl.GetUniformLocation(state.triangle_program, "u_color")
     if state.triangle_color_location == -1 {
-        fmt.eprintf("Triangle shader is missing the active uniform u_color")
+        log.error("Triangle shader is missing the active uniform u_color")
         return false
+    }
+
+    state.triangle_mvp_location = gl.GetUniformLocation(state.triangle_program, "u_mvp")
+    if state.triangle_mvp_location == -1 {
+      log.error("Triangle shader is missing uniform u_mvp")
     }
     return true
 }
@@ -85,8 +92,11 @@ shutdown :: proc(state: ^State){
     state.triangle_color_location = -1
 }
 
-draw_triangle :: proc(state: ^State, color: [3]f32){
+draw_triangle :: proc(state: ^State, mvp: matrix[4, 4]f32,  color: [3]f32){
     gl.UseProgram(state.triangle_program)
+
+    mvp := mvp
+    gl.UniformMatrix4fv(state.triangle_mvp_location, 1, false, &mvp[0, 0])
 
     gl.Uniform3f(state.triangle_color_location, color[0], color[1], color[2])
 

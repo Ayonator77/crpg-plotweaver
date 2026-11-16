@@ -60,22 +60,33 @@ src/
     platform/       window, GL context, input (SDL3)
     renderer/       OpenGL resources and shader compilation
     spatial/        transforms and spatial math
+  game/             game-specific state and rules
+labs/               small standalone programs written while learning
+docs/               the plan and the course, as an Obsidian vault
 run.bat             build-and-run script
+debug.bat           build and open in the RAD Debugger
 ```
 
-The code is split into two layers. `engine/` holds generic systems, and game-specific rules will sit in a separate layer on top of it.
+The code is split into two layers. `engine/` holds generic systems, and game-specific rules sit in a separate layer on top of it.
+
+## A learning project
+
+This is also a way of learning low-level programming, graphics programming and software architecture from the ground up. All code in `src/` and `labs/` is written by hand, without AI assistance. The course material and the plan are in [`docs/`](docs/Home.md). Open that folder as a vault in [Obsidian](https://obsidian.md/) for working links and folded hints.
 
 ## Roadmap
 
-- [x] Window, OpenGL context, and shaders loaded from files
-- [ ] Input handling, frame loop, and debug tooling
-- [ ] 3D rendering: camera, meshes, materials, glTF import
-- [ ] Entity-component system
-- [ ] Skeletal animation system with blending and state machines
-- [ ] In-engine editor (Dear ImGui and ImGuizmo)
-- [ ] Turn-based combat and the action economy
-- [ ] Conversations and skill checks
-- [ ] Environmental surfaces and their interactions
+The full version is in [`docs/Plan/Roadmap.md`](docs/Plan/Roadmap.md), and the MVP is defined in [`docs/Plan/North Star and MVP.md`](docs/Plan/North%20Star%20and%20MVP.md).
+
+- [ ] Stage 0: the machine (memory, pointers, allocators, measuring)
+- [ ] Stage 1: a software renderer, to learn the graphics pipeline from first principles
+- [ ] Stage 2: the GPU and the engine skeleton
+- [ ] Stage 3: a graybox CRPG (party, turns, pathfinding, a playable fight with cubes)
+- [ ] Stage 4: asset loading, the world model, and a level editor
+- [ ] Stage 5: a skeletal animation system and an animation editor
+- [ ] Stage 6: large continuous areas, verticality, and traversal (jump, fly, teleport)
+- [ ] Stage 7: lighting and atmospherics
+- [ ] Stage 8: the Plotweaver systems (combat, elemental surfaces, exploration, dialogue) and their editors
+- [ ] Stage 9: the MVP slice
 
 ## Author
 

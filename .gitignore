@@ -1,4 +1,10 @@
 /bin/
-/.local-roadmap.md
-/ENGINE_PLAN.md
 /.claude/worktrees/
+
+# Build output from labs built without -out
+*.exe
+*.pdb
+*.rdi
+
+# Obsidian per-machine window state
+/docs/.obsidian/workspace.json

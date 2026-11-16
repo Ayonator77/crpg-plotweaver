@@ -36,6 +36,6 @@ gl_debug_callback :: proc "c" (source, type, id, severity: u32, length: i32, mes
     case:
       //chatty driver info, ignore
   }
-
+ 
   
 }
